@@ -7,7 +7,6 @@ pipeline {
 
     environment {
         DEPLOY_PATH = '/var/www/html/shopping-bill-calculator'
-        DISCORD_WEBHOOK = 'https://discord.com'
     }
 
     stages {
@@ -21,25 +20,26 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing node application packages...'
+                echo 'Installing dependencies...'
                 sh 'npm install'
             }
         }
 
-        stage('Execute Compilation Build') {
+        stage('Build Application') {
             steps {
-                echo 'Compiling optimized distribution artifacts...'
+                echo 'Building React application...'
                 sh 'npm run build'
             }
         }
 
-        stage('Deploy Live Application') {
+        stage('Deploy Application') {
             steps {
-                echo "Deploying production build assets to ${env.DEPLOY_PATH}..."
+                echo "Deploying application to ${env.DEPLOY_PATH}..."
 
                 sh '''
-                    mkdir -p "$DEPLOY_PATH"
-                    cp -R dist/* "$DEPLOY_PATH/"
+                    sudo mkdir -p "$DEPLOY_PATH"
+                    sudo rm -rf "$DEPLOY_PATH"/*
+                    sudo cp -R dist/* "$DEPLOY_PATH/"
                 '''
             }
         }
@@ -47,11 +47,15 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful!'
+            echo '✅ Deployment successful!'
         }
 
         failure {
-            echo 'Pipeline execution failure detected.'
+            echo '❌ Deployment failed!'
+        }
+
+        always {
+            echo 'Jenkins pipeline completed.'
         }
     }
 }
